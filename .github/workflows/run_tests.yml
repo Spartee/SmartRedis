@@ -27,9 +27,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        gcc_v: [8] # Version of GFortran we want to use.
-        rai_v: [1.2.4] # add 1.2.5 in the future
+        os: [ubuntu-20.04] # cannot test on macOS as docker isn't supported on Mac
+        gcc_v: [8] # Version of gcc/gfortran we want to use.
+        rai_v: [1.2.4] # currently supported verison of RedisAI
     env:
       FC: gfortran-${{ matrix.gcc_v }}
       GCC_V: ${{ matrix.gcc_v }}
@@ -48,10 +48,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 6379:6379 # map port 6379 on service container to the host
+          # map port 6379 on service container to the host
+          - 6379:6379
 
     steps:
-      - uses: actions/checkout@v2 # download a copy of SmartRedis before running CI tests
+      # download a copy of SmartRedis before running CI tests
+      - uses: actions/checkout@v2
 
       - uses: actions/setup-python@v2
         with:
@@ -81,6 +83,7 @@ jobs:
             bash ../build-scripts/build-catch.sh &&
             cd ../ &&
             make test-verbose
+
       - name: Run Python coverage tests
         run: python -m pytest --cov=./src/python/module/smartredis/ --cov-report=xml --cov-append -vv ./tests/python/
 
